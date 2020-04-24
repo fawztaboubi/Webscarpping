@@ -9,23 +9,25 @@ Original file is located at
 **This notebook is a simple uncommented draft**
 """
 
-import bs4 as bs
+import bs4 as bs      
 from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup as soup
 site = 'https://www.nessma.tv/ar'
 uClient= uReq(site)
-page_html=uClient.read()
-uClient.close()
-page_soup = soup(page_html,"html.parser")
+page_html=uClient.read() #page_html contains the source code of site
+uClient.close()          
+page_soup = soup(page_html,"html.parser")   
+# creating a soup object, this allows us interact with the soup, apply functions and various operations
+#page_soup in the html code of site
 containers= page_soup.findAll("div",{"class":"taxo-menu"},{"id":"menu-principale"})
-categories={}
+categories={}       # categories={'category' : 'link to category' }
 for url in containers:
      ch=url.a.text
      ch=ch.replace('\n\t\t\t\t\t\t\t\t\t\t','')
      if url.a['href']!= 'javascript:void(0)' :
         categories[ch]= url.a["href"]
 
-print(categories)
+print(categories)    
 titles=[]
 for key in categories.keys():
   titles.append(key)
@@ -34,13 +36,13 @@ print(titles)
 
 """**prototyping**
 
-extracting articles and titles from different pages of the same category
+extracting articles and titles from different pages of the same category 
 """
 
 i=1
 titles2=[]
 articles=[]
-M=[][]
+M=[[string , string]]
 while i<5 :
     site = 'https://www.nessma.tv/ar/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%AC%D9%87%D8%A7%D8%AA/26?page='+str(i)
     uClient= uReq(site)
@@ -60,15 +62,18 @@ print(titles2)
 print(len(titles2))
 print(len(articles))
 
-"""extract: puts all articles and titles respictively in a"""
+"""extract:given the category link, extract goes through a ceratin number of pages of this category
+   and returns all articles and titles respectively in a 2d np array. demo: M[[title1_page1,article1_page1],
+                                                                              [title2_page1,article2_page1],
+                                                                              ..............................
+                                                                              [title10_page20,article10_page20]]"""
 
 import numpy as np
 import string
 
 def extract (P) :
   
-  titles2=[]
-  articles=[]
+
   M=[[string , string]]
   for i in range (30):
      s=i
@@ -79,22 +84,17 @@ def extract (P) :
      page_soup2 = soup(page_html,"html.parser")
      containers2=page_soup2.findAll('h2',{'class':'entry-title'})
      for T in containers2 :
-       articles.append(T.a["href"])
        ch=T.text
        ch=ch.replace('\n','')
-       titles2.append(ch)
        M.append([ch,T.a["href"]])
        
   return(np.mat(M))    
-L = extract('https://www.nessma.tv/ar/%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%AC%D9%87%D8%A7%D8%AA/26?page=')
-print(L)
-print(len(L))
 
-"""going through all pages of all categoris , extracting articles and titles
-as I have no idea what kind of data format we need,I'm opting for all kinds and will delete the unecessary ones later.
+"""Now go through all pages of all categories , extract articles and titles.
+As I have no idea what kind of data format we need,I'm opting for all kinds and will delete the unecessary ones later.
 """
 
-cat={}
+cat={}  #cat={'category':['link to category',M(articles and titles)]}
 for ca in categories.keys() :
   cat[ca]=[categories[ca] , extract(categories[ca]+'?page=') ]
 print(cat)
